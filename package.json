@@ -1,5 +1,10 @@
 {
   "name": "signpost",
+  "publisher": "binroot",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BinRoot/signpost"
+  },
   "displayName": "signpost",
   "description": "View nearest README.md files",
   "version": "0.0.1",
