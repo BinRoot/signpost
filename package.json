@@ -7,9 +7,9 @@
   },
   "displayName": "signpost",
   "description": "View nearest README.md files",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
-    "vscode": "^1.100.0"
+    "vscode": "^1.60.0"
   },
   "categories": [
     "Other"
@@ -20,12 +20,6 @@
   ],
   "main": "./dist/extension.js",
   "contributes": {
-    "commands": [
-      {
-        "command": "signpost.helloWorld",
-        "title": "Hello World"
-      }
-    ],
     "views": {
       "explorer": [
         {
@@ -50,7 +44,7 @@
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
-    "@types/vscode": "^1.100.0",
+    "@types/vscode": "^1.60.0",
     "@typescript-eslint/eslint-plugin": "^8.31.1",
     "@typescript-eslint/parser": "^8.31.1",
     "@vscode/test-cli": "^0.0.10",

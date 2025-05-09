@@ -1,3 +1,3 @@
 # Intro
 
-VS Code extension to view nearest README.md file
+VS Code extension to show nearest README.md file
