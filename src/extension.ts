@@ -141,6 +141,11 @@ class ReadmeViewProvider implements vscode.WebviewViewProvider {
       if (!href || !this.view || !readme) {
         return `<img src=\"${href}\" alt=\"${altText}\" />`;
       }
+      if (/^(https?:)?\/\//.test(href) || href.startsWith("data:")) {
+        const titleAttr = imgTitle ? ` title="${imgTitle}"` : "";
+        return `<img src="${href}" alt="${altText}"${titleAttr} />`;
+      }
+
       // Resolve image path relative to the README location
       const imgPath = join(dirname(readme), href);
       const imgUri = vscode.Uri.file(imgPath);

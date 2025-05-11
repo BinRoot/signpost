@@ -1,6 +1,6 @@
 # Intro
 
-![Signpost](signpost.png)
+![Signpost](https://raw.githubusercontent.com/BinRoot/signpost/refs/heads/main/signpost.png)
 
 VS Code extension to show nearest README.md file.
 
