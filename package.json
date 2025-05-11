@@ -7,7 +7,7 @@
   },
   "displayName": "signpost",
   "description": "View nearest README.md files",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.60.0"
   },
@@ -20,6 +20,26 @@
   ],
   "main": "./dist/extension.js",
   "contributes": {
+    "commands": [
+      {
+        "command": "signpost.showReadmeForResource",
+        "title": "Show README"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "signpost.showReadmeForResource",
+          "when": "explorerResourceIsFolder",
+          "group": "navigation"
+        },
+        {
+          "command": "signpost.showReadmeForResource",
+          "when": "explorerResourceIsFile",
+          "group": "navigation"
+        }
+      ]
+    },
     "views": {
       "explorer": [
         {
@@ -56,6 +76,7 @@
     "webpack-cli": "^6.0.1"
   },
   "dependencies": {
+    "dedent": "^1.6.0",
     "marked": "^15.0.11"
   }
 }
