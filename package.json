@@ -6,8 +6,9 @@
     "url": "https://github.com/BinRoot/signpost"
   },
   "displayName": "signpost",
+  "icon": "icon.png",
   "description": "View nearest README.md files",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "engines": {
     "vscode": "^1.60.0"
   },

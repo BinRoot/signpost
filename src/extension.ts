@@ -11,7 +11,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.window.registerWebviewViewProvider("signpost", provider)
   );
 
-  // Clear any manual override and schedule render on editor change
+  // Clear override and schedule render when active editor changes
   context.subscriptions.push(
     vscode.window.onDidChangeActiveTextEditor(() => {
       provider.clearOverride();
@@ -19,7 +19,7 @@ export function activate(context: vscode.ExtensionContext) {
     })
   );
 
-  // Refresh on saving a README
+  // Refresh when a README is saved
   context.subscriptions.push(
     vscode.workspace.onDidSaveTextDocument((doc) => {
       if (/README\.md$/i.test(doc.fileName)) {
@@ -53,7 +53,11 @@ class ReadmeViewProvider implements vscode.WebviewViewProvider {
 
   resolveWebviewView(view: vscode.WebviewView) {
     this.view = view;
-    view.webview.options = { enableScripts: true };
+    const rootUri = vscode.workspace.workspaceFolders?.[0].uri;
+    view.webview.options = {
+      enableScripts: true,
+      localResourceRoots: rootUri ? [rootUri] : [],
+    };
     view.webview.onDidReceiveMessage((msg) => {
       if (msg.command === "open" && this.readmePath) {
         vscode.commands.executeCommand(
@@ -73,27 +77,24 @@ class ReadmeViewProvider implements vscode.WebviewViewProvider {
     this.overrideDir = dir;
   }
 
-  // Debounced render to prevent flicker
   public scheduleRender() {
-    if (!this.view) {
-      return;
-    }
+    if (!this.view) return;
     clearTimeout(this.updateTimer!);
     this.updateTimer = setTimeout(() => this.updateContent(), 100);
   }
 
   private updateContent() {
-    if (!this.view) {
-      return;
-    }
+    if (!this.view) return;
 
-    const root = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-    let dir = this.overrideDir
+    const root = vscode.workspace.workspaceFolders?.[0].uri.fsPath || "";
+    const startDir = this.overrideDir
       ? this.overrideDir
       : vscode.window.activeTextEditor
       ? dirname(vscode.window.activeTextEditor.document.uri.fsPath)
       : root;
 
+    // Find nearest README.md file
+    let dir = startDir;
     let readme: string | undefined;
     while (dir) {
       const p = join(dir, "README.md");
@@ -101,48 +102,88 @@ class ReadmeViewProvider implements vscode.WebviewViewProvider {
         readme = p;
         break;
       }
-      if (!root || dir === root) {
-        break;
-      }
-
+      if (!root || dir === root) break;
       dir = dirname(dir);
     }
-
     this.readmePath = readme;
+
+    // Read Markdown content
+    const md = readme ? readFileSync(readme, "utf8") : "";
+
+    // Setup custom renderer to handle local images
+    const renderer = new marked.Renderer();
+    renderer.image = (
+      hrefOrToken: any,
+      title?: any,
+      text?: any,
+      tokens?: any
+    ) => {
+      // Normalize arguments for both signature versions
+      let href: string;
+      let imgTitle: string | null = null;
+      let altText: string;
+      if (
+        text === undefined &&
+        title === undefined &&
+        hrefOrToken &&
+        hrefOrToken.href
+      ) {
+        // new signature: token object passed
+        href = hrefOrToken.href;
+        imgTitle = hrefOrToken.title || null;
+        altText = hrefOrToken.text;
+      } else {
+        // old signature: href, title, text
+        href = hrefOrToken;
+        imgTitle = title || null;
+        altText = text!;
+      }
+      if (!href || !this.view || !readme) {
+        return `<img src=\"${href}\" alt=\"${altText}\" />`;
+      }
+      // Resolve image path relative to the README location
+      const imgPath = join(dirname(readme), href);
+      const imgUri = vscode.Uri.file(imgPath);
+      const webviewUri = this.view.webview.asWebviewUri(imgUri);
+      const titleAttr = imgTitle ? ` title=\"${imgTitle}\"` : "";
+      return `<img src=\"${webviewUri}\" alt=\"${altText}\"${titleAttr} />`;
+    };
+
+    // Convert Markdown to HTML with the custom renderer
     const contentHtml = readme
-      ? marked.parse(readFileSync(readme, "utf8"))
+      ? marked.parse(md, { renderer })
       : "<em>No README.md found</em>";
 
-    const readmeShortPath = this.readmePath?.split("/").slice(-2).join("/");
+    // Short path for display
+    const readmeShortPath = this.readmePath?.split(/[\\/]/).slice(-2).join("/");
 
+    // Open link button
     const openButton = readme
-      ? `<a class="open-btn" href="#" onclick="openReadme()" title="Open README.md">${readmeShortPath}</a>`
+      ? `<a class=\"open-btn\" href=\"#\" onclick=\"openReadme()\" title=\"Open README.md\">${readmeShortPath}</a>`
       : "";
 
+    // Render the webview HTML
     this.view.webview.html = dedent`
       <!DOCTYPE html>
       <html>
       <head>
-        <meta charset="UTF-8">
+        <meta charset=\"UTF-8\" />
         <style>
           body { position: relative; margin: 0; padding: 10px; font-family: var(--vscode-font-family); }
-          .open-btn {
+          .open-btn { position: absolute; top: 10px; right: 10px; z-index: 999;
             background: transparent; color: var(--vscode-textLink-foreground);
             opacity: 0.6; padding: 2px 4px; border-radius: 2px;
-            text-decoration: none; font-size: 0.9rem; transition: opacity 0.2s;
-          }
+            text-decoration: none; font-size: 0.9rem; transition: opacity 0.2s; }
           .open-btn:hover { opacity: 1; }
           .content { margin: 0; }
         </style>
       </head>
       <body>
         ${openButton}
-        <div class="content">${contentHtml}</div>
+        <div class=\"content\">${contentHtml}</div>
         <script>
           const vscode = acquireVsCodeApi();
-          function openReadme() {
-            vscode.postMessage({ command: 'open' });
-          }
+          function openReadme() { vscode.postMessage({ command: 'open' }); }
         </script>
       </body>
       </html>
