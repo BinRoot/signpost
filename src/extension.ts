@@ -165,27 +165,45 @@ class ReadmeViewProvider implements vscode.WebviewViewProvider {
     // Render the webview HTML
     this.view.webview.html = dedent`
       <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset=\"UTF-8\" />
-        <style>
-          body { position: relative; margin: 0; padding: 10px; font-family: var(--vscode-font-family); }
-          .open-btn { position: absolute; top: 10px; right: 10px; z-index: 999;
-            background: transparent; color: var(--vscode-textLink-foreground);
-            opacity: 0.6; padding: 2px 4px; border-radius: 2px;
-            text-decoration: none; font-size: 0.9rem; transition: opacity 0.2s; }
-          .open-btn:hover { opacity: 1; }
-          .content { margin: 0; }
-        </style>
-      </head>
-      <body>
-        ${openButton}
-        <div class=\"content\">${contentHtml}</div>
-        <script>
-          const vscode = acquireVsCodeApi();
-          function openReadme() { vscode.postMessage({ command: 'open' }); }
-        </script>
-      </body>
+      <html lang="en">
+        <head>
+          <meta charset='UTF-8'>
+          <style>
+            body {
+              position: relative;
+              margin: 0;
+              padding: 10px;
+              font-family: var(--vscode-font-family);
+            }
+
+            .open-btn {
+              background: transparent;
+              color: var(--vscode-textLink-foreground);
+              opacity: 0.6;
+              text-decoration: none;
+              font-size: 0.9rem;
+              transition: opacity 0.2s;
+            }
+
+            .open-btn:hover {
+              opacity: 1;
+            }
+
+            .content {
+              margin: 0;
+            }
+          </style>
+        </head>
+        <body>
+          ${openButton}
+          <div class="content">${contentHtml}</div>
+          <script>
+            const vscode = acquireVsCodeApi();
+            function openReadme() {
+              vscode.postMessage({ command: 'open' });
+            }
+          </script>
+        </body>
       </html>
     `;
   }

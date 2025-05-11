@@ -1,9 +1,39 @@
-# Change Log
+# Changelog
 
-All notable changes to the "signpost" extension will be documented in this file.
+All notable changes to this project will be documented in this file.
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-- Initial release
+### Added
+
+-
+
+### Changed
+
+-
+
+### Fixed
+
+-
+
+## [0.0.1–0.0.5] - 2025-05-11
+
+### Added
+
+- Initial release features of **Signpost** extension, including:
+  - README sidebar view rendering nearest `README.md` files
+  - Support for rendering local images
+  - Context-menu command to manually show folder README
+  - Automatic refresh on editor change and README save
+  - Debounced rendering to avoid flicker
+  - Open-link button with file path display
+
+### Changed
+
+- Aggregated minor enhancements from patch releases 0.0.2, 0.0.3, and 0.0.4
+
+### Fixed
+
+- Squashed various small bug fixes and adjustments across patch versions
